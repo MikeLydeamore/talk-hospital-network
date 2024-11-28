@@ -1,0 +1,215 @@
+---
+title: "Hospitalisations in Victoria: A network problem"
+author: M. J. Lydeamore
+date: today
+format:
+    presentation-revealjs+letterbox:
+        fig-align: center
+---
+
+## Carbapenemase-producing Enterobacterales {.smaller}
+
+```{css}
+figcaption {
+    text-align: center;
+}
+
+.center {
+  text-align: center;
+}
+```
+
+```{r}
+#| label: load-packages
+
+library(knitr)
+library(ggplot2)
+library(conmat)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(mgcv)
+library(patchwork)
+library(gt)
+```
+
+
+
+* Gram-negative bacilli occurring naturally in the GI tract
+* Resistant to carbapenem antibiotics
+* Several different carbapenemases genes in CPE:
+  * Imipenemase (IMP)
+  *  Klebsiella penumoniae carbapenemase (KPC)
+  *  New-Delhi metallo-β-lactamase (NDM)
+  * Verona integron-encoded metallo-β-lactamase (VIM) and
+  *  Oxacillinases (OXA)
+*  For Enterobacterales, IMP(-4) most commonly found in Victoria (28% of all cases)
+* Assumed to be colonised indefinitely
+
+## Carbapenemase-producing Enterobacterales {.smaller}
+
+* Surveillance officially established in Victoria in 2015, became notifiable in 2018
+* Since becoming notifiable, notifications have been steadily increasing
+
+![](images/incidence.png){fig-align="center"}
+
+## Modelling possible control
+
+::: {.columns}
+::: {.column width='50%'}
+
+* We know that healthcare is a network phenomenon
+* Need to understand if CPE+ patients are different to CPE- patients
+
+:::
+::: {.column width='50%'}
+![](images/hospinet_circle.png){fig-align="center"}
+:::
+:::
+
+## Health Services in Victoria, Australia {.smaller}
+
+* Health services are individually governed
+* Centralised guidelines for reporitng
+* Have their own IP results, testing/screening requirements, admission & transfer patterns
+* Are often spread across multiple campuses which operate independently but are administered centrally
+
+::: {.fragment}
+As these services tend to operate on the same patient data platform, we assume that previously diagnosed patients will have infection prevention protocols in place if they are re-admitted to the same service.
+
+This is less likely to be true in a different health service, as there is no centralised notification system to other health services.
+
+:::
+
+## Notification system
+
+![](images/echidna-notification-letter.png){fig-align="center"}
+
+## Data sources {.smaller}
+
+Victorian Admitted Episodes Dataset (VAED):
+
+* Line list of every hospital admission (public and private)
+* Reports demographics, conditions, treatments, timing, location
+
+Public Health Event Surveillance System (PHESS):
+
+* Records information on *notifiable* disease events
+* Includes patient demographics, date of notification, date of test
+* Operational system, used for contact tracing and outbreak analytics
+
+## Network construction
+
+We model how patients move around the network.
+
+* Nodes: Hospital (physical)
+* Edge: Transfer of patient between two hospitals, within 365 days
+* Weight: Number of patients transferred
+
+::: {.fragment}
+This is a weighted, directed network. The worst kind of non-temporal network.
+:::
+
+## Network construction {.smaller}
+
+* Clustering: Infomap (based on a random walk through the network)
+* Importance of certain facilites: Adjusted Rand Index
+
+$$R = \frac{a+b}{a+b+c+d} = \frac{a+b}{n\choose 2},$$
+
+where
+
+* $a$ is the number of pairs of elements that are in the same subset in $X$ and the same subset in $Y$,
+* $b$ be the number of pairs of elements that are in different subsets in $X$ and different subsets of $Y$,
+* $c$ be the number of pairs of elements that are in the same subset in $X$ and different subsets in $Y$ and,
+* $d$ be the number of pairs of elements that are in different subsets in $X$ and the same subset in $Y$.
+
+# Network exploration
+
+::: {.fragment}
+### As close to results as we're gonna get
+:::
+
+## Admission demographics
+
+```{r}
+#| label: tbl-admission-demographics
+#| tbl-cap: Admission demographics for patients in the VAED between 2011 and 2019.
+
+comma_formatter <- scales::label_comma(accuracy = 1, big.mark = ",", decimal.mark = ".")
+
+demographics <- tribble(
+  ~type, ~label, ~N,
+  "Gender", "Male", 12723729 |> comma_formatter(),
+  "Gender", "Female", 14071488 |> comma_formatter(),
+  "Gender", "Other", (38+1152) |> comma_formatter(),
+  "Age Group", "<20", (1347218+342159+289579+588687) |> comma_formatter(),
+  "Age Group", "20-39", (891990+1121298+1386758+1344698) |> comma_formatter(),
+  "Age Group", "50-59", (1334259+1440228+1679789+1918012) |> comma_formatter(),
+  "Age Group", ">60", (2197415+2439358+2511215+2339184+1875588+1748972) |> comma_formatter(),
+  "Length of Stay", "Mean", "2.739",
+  "Length of Stay", "Median (IQR)", "2 (1-3)"
+)
+
+gt(demographics, groupname_col = "type", rowname_col = "label") |>
+  fmt_number(use_seps = TRUE, decimals = 0) |>
+  tab_stubhead(label = "Variable") |>
+  tab_stub_indent(
+    rows = everything(),
+    indent = 3
+  )
+```
+
+## Network exploration
+
+* Density: High (0.44)
+* Clustering: Reasonably strong (foreshadowing)
+
+## Network exploration
+
+![](images/fig-degree-distribution-1.png){fig-align="center"}
+
+## Clustering
+
+![](images/num-facilities-by-cluster-1.png){fig-align="center"}
+
+## Clustering
+
+![](images/fig-cluster-maps-1.png){fig-align="center"}
+
+## Clustering
+
+![](images/fig-cluster-maps-2.png){fig-align="center"}
+
+## Node importance
+
+ARI: Interpret at proportion of clustering structure "preserved"
+
+::: {.fragment .incremental}
+* Removing small and same-day facilities gives an ARI of between 0.58 and 0.62
+  * Seems key to making connections between larger hospitals
+  * Removing one-by-one or all doesn't notably change ARI
+* Removing public hospitals gives ARI of 0.22
+* Removing private hospitals gives ARI of 0.58
+:::
+
+## Next steps {.smaller}
+
+::: {.incremental}
+
+* Hospital system is dense, geographically clustered
+* Transfers are incredibly frequent, tend to move towards metropolitan Melbourne
+* Need to include pretty much all facilities in system consideration
+
+* Surveillance should be considered geographically
+  * Local public health units?
+* Impact of patients going home
+* Testing/sampling for conditions
+
+:::
+
+::: {.fragment}
+This is a very extensive and detailed dataset, with many more project ideas than time.
+
+But presents an exciting opportunity to build a data-driven surveillance and outbreak response system.
+:::
