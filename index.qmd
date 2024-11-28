@@ -113,6 +113,16 @@ This is a weighted, directed network. The worst kind of non-temporal network.
 ## Network construction {.smaller}
 
 * Clustering: Infomap (based on a random walk through the network)
+
+$$\max_{M} L(M) = q H(\mathcal{Q}) + \sum_{i=1}^m p^{i} H(\mathcal{P}^i)$$
+
+::: {.fragment}
+Effectively maximising entropy of the "walk" subject to a partition, $Q$, weighting within and between cluster movements.
+
+$p$ and $q$ informed by edge weights
+:::
+
+## Network construction {.smaller}
 * Importance of certain facilites: Adjusted Rand Index
 
 $$R = \frac{a+b}{a+b+c+d} = \frac{a+b}{n\choose 2},$$
@@ -124,6 +134,7 @@ where
 * $c$ be the number of pairs of elements that are in the same subset in $X$ and different subsets in $Y$ and,
 * $d$ be the number of pairs of elements that are in different subsets in $X$ and the same subset in $Y$.
 
+
 # Network exploration
 
 ::: {.fragment}
@@ -133,8 +144,6 @@ where
 ## Admission demographics
 
 ```{r}
-#| label: tbl-admission-demographics
-#| tbl-cap: Admission demographics for patients in the VAED between 2011 and 2019.
 
 comma_formatter <- scales::label_comma(accuracy = 1, big.mark = ",", decimal.mark = ".")
 
