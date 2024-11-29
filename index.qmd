@@ -7,6 +7,14 @@ format:
         fig-align: center
 ---
 
+## Monash EBS is hiring
+
+* Education focussed Lecturer / Senior Lecturer - Business Statistics / Econometrics  
+<https://careers.pageuppeople.com/513/cw/en/job/670005/lecturer-ed-focused-senior-lecturer-ed-focused>
+
+* Lecturer / Senior Lecturer - Actuarial Science  
+<https://careers.pageuppeople.com/513/cw/en/job/670008/lecturersenior-lecturer-actuarial-science>
+
 ## Carbapenemase-producing Enterobacterales {.smaller}
 
 ```{css}
